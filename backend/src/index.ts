@@ -22,6 +22,7 @@ import cors from "cors";
 import { WebSocketServer, WebSocket } from "ws";
 import { MotionDetector, type BssidObs, type Frame, type SensingEvent } from "./motion.js";
 import { chat, buildContextSummary, type ChatMessage } from "./llm.js";
+import { docsHtml } from "./docs.js";
 
 const PORT = Number(process.env.PORT || 8090);
 const SENSOR_CMD =
@@ -104,6 +105,10 @@ function startSensor() {
 }
 
 // ---- REST -------------------------------------------------------------------
+app.get("/", (_req, res) => {
+  res.type("html").send(docsHtml(PORT));
+});
+
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, sensor: latest ? "streaming" : "starting", uptime: process.uptime() });
 });
