@@ -36,6 +36,12 @@ let latest: Frame | null = null;
 const history: Frame[] = [];
 const events: SensingEvent[] = [];
 
+// Session stats
+const startedAt = Date.now();
+let peakMotion = 0;
+let totalFrames = 0;
+let motionFrames = 0;
+
 // ---- WebSocket broadcast ----------------------------------------------------
 const app = express();
 app.use(cors());
@@ -74,6 +80,12 @@ function startSensor() {
     latest = frame;
     history.push(frame);
     if (history.length > HISTORY_MAX) history.shift();
+
+    totalFrames++;
+    if (!frame.calibrating) {
+      if (frame.motionScore > peakMotion) peakMotion = frame.motionScore;
+      if (frame.state === "motion") motionFrames++;
+    }
     broadcast({ kind: "frame", ...frame });
 
     if (event) {
@@ -111,6 +123,57 @@ function req_n(req: express.Request): string | undefined {
 app.get("/api/events", (_req, res) => {
   res.json(events.slice(-EVENTS_MAX));
 });
+
+app.post("/api/recalibrate", (_req, res) => {
+  detector.reset();
+  peakMotion = 0;
+  console.log("[backend] recalibrated (baseline reset)");
+  res.json({ ok: true });
+});
+
+app.get("/api/stats", (_req, res) => {
+  res.json({
+    uptimeSec: Math.round((Date.now() - startedAt) / 1000),
+    totalFrames,
+    totalEvents: events.length,
+    motionEvents: events.filter((e) => e.type === "motion_started").length,
+    peakMotion: Math.round(peakMotion * 100) / 100,
+    occupancyRatio: totalFrames ? Math.round((motionFrames / totalFrames) * 100) : 0,
+    calibrating: latest?.calibrating ?? true,
+  });
+});
+
+// Fast, LLM-free interpretation of the recent motion-energy graph.
+app.get("/api/insight", (_req, res) => {
+  const scores = history.slice(-48).map((f) => f.motionScore);
+  if (scores.length < 6) {
+    return res.json({ trend: "stable", level: "bajo", text: "Recopilando señal…" });
+  }
+  const half = Math.floor(scores.length / 2);
+  const prior = avg(scores.slice(0, half));
+  const recent = avg(scores.slice(half));
+  const now = scores[scores.length - 1];
+  const peak = Math.max(...scores);
+  const delta = recent - prior;
+  const trend = delta > 0.25 ? "rising" : delta < -0.25 ? "falling" : "stable";
+  const level = now >= 1.6 ? "alto" : now >= 0.9 ? "moderado" : "bajo";
+
+  let text: string;
+  if (latest?.calibrating) text = "Calibrando la línea base del entorno…";
+  else if (trend === "rising" && level !== "bajo")
+    text = `Actividad en aumento: la energía subió de ${prior.toFixed(2)} a ${recent.toFixed(2)}. Probable movimiento cercano.`;
+  else if (trend === "falling")
+    text = `La actividad está bajando (de ${prior.toFixed(2)} a ${recent.toFixed(2)}). El entorno se está calmando.`;
+  else if (level === "alto")
+    text = `Movimiento sostenido: energía alta y estable (~${recent.toFixed(2)}). Presencia activa.`;
+  else if (level === "moderado")
+    text = `Fluctuaciones leves (~${recent.toFixed(2)}); posible movimiento sutil o cambios del entorno.`;
+  else text = `Entorno tranquilo: energía baja y estable (~${recent.toFixed(2)}). Sin movimiento relevante.`;
+
+  res.json({ trend, level, now: r2(now), recent: r2(recent), prior: r2(prior), peak: r2(peak), text });
+});
+function avg(a: number[]): number { return a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0; }
+function r2(x: number): number { return Math.round(x * 100) / 100; }
 
 function windowSummary(minutes = 10) {
   const cutoff = Date.now() - minutes * 60_000;

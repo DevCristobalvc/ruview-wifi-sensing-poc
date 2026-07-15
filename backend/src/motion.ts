@@ -32,6 +32,9 @@ export interface Frame {
   motionRaw: number;
   apCount: number;
   aps: ApState[]; // sorted by |z| desc
+  avgRssi: number; // mean RSSI across all visible APs (dBm)
+  bands: { g24: number; g5: number; g6: number }; // AP count per band
+  activeAps: number; // APs currently deviating (|z| > 1.6)
 }
 
 export interface SensingEvent {
@@ -66,8 +69,18 @@ export class MotionDetector {
   private motionStartedAt = 0;
   private lowSince = 0;
 
-  constructor(calibrationMs = 8000, private now: () => number = Date.now) {
+  constructor(private calibrationMs = 8000, private now: () => number = Date.now) {
     this.calibrationUntil = this.now() + calibrationMs;
+  }
+
+  /** Reset the learned baselines and re-enter calibration (on-demand, for demos). */
+  reset(calibrationMs = this.calibrationMs) {
+    this.baselines.clear();
+    this.smoothScore = 0;
+    this.state = "calibrating";
+    this.calibrationUntil = this.now() + calibrationMs;
+    this.motionStartedAt = 0;
+    this.lowSince = 0;
   }
 
   update(obs: BssidObs[]): { frame: Frame; event?: SensingEvent } {
@@ -103,6 +116,16 @@ export class MotionDetector {
 
     const motionRaw = zsq.length ? Math.sqrt(zsq.reduce((a, c) => a + c, 0) / zsq.length) : 0;
     this.smoothScore += MOTION_SMOOTH * (motionRaw - this.smoothScore);
+
+    // Aggregates for richer UI.
+    const avgRssi = obs.length ? obs.reduce((a, o) => a + o.rssi_dbm, 0) / obs.length : 0;
+    const bands = { g24: 0, g5: 0, g6: 0 };
+    for (const o of obs) {
+      if (o.band?.includes("2_4") || o.band?.includes("2.4")) bands.g24++;
+      else if (o.band?.includes("6")) bands.g6++;
+      else if (o.band?.includes("5")) bands.g5++;
+    }
+    const activeAps = aps.filter((a) => Math.abs(a.z) > MOTION_ON).length;
 
     aps.sort((a, b) => Math.abs(b.z) - Math.abs(a.z));
 
@@ -147,6 +170,9 @@ export class MotionDetector {
       motionRaw: round(motionRaw),
       apCount: obs.length,
       aps: aps.slice(0, 14).map((a) => ({ ...a, z: round(a.z), rssi: round(a.rssi) })),
+      avgRssi: round(avgRssi),
+      bands,
+      activeAps,
     };
 
     return { frame, event };
