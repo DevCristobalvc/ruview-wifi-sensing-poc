@@ -1,0 +1,16 @@
+[package]
+name = "ruview-rssi-sensor"
+version = "0.1.0"
+edition = "2021"
+description = "Real-time WiFi RSSI streamer for the RuView WiFi-sensing PoC. Reads the Windows WLAN driver's cached BSS list (native wlanapi.dll, locale-independent) via ruvnet's wifi-densepose-wifiscan crate and prints one JSON line per scan."
+license = "MIT"
+
+[[bin]]
+name = "ruview-rssi-sensor"
+path = "src/main.rs"
+
+[dependencies]
+# Published crate from the ruvnet/ruview project (ADR-022 Windows WiFi scanning).
+# Provides WlanApiScanner::scan_native() -> Vec<BssidObservation> with real
+# per-BSSID RSSI in dBm, read straight from the WLAN service cache.
+wifi-densepose-wifiscan = "0.3"
