@@ -294,7 +294,7 @@ export default function Page() {
       <div className={"flash-overlay" + (flash ? " on" : "")} />
       <header className="top">
         <div className="brand">
-          <h1>π RuView · Sensado WiFi</h1>
+          <h1>π RuViu · Sensado WiFi</h1>
           <span className="sub">presencia y movimiento con RSSI real · agente DeepSeek</span>
         </div>
         <div className="conn">
@@ -446,7 +446,7 @@ export default function Page() {
             </div>
             <div className="log" ref={logRef}>
               {messages.length === 0 && (
-                <div className="msg assistant">Hola 👋 Soy tu asistente de sensado WiFi. Pregúntame por el estado de la sala, pídeme un resumen o activa la auto-narración.</div>
+                <div className="msg assistant">Hola 👋 Soy tu asistente de sensado WiFi. Pregúntame por el estado de la sala, o por cómo funciona el proyecto (arquitectura, si necesitas estar cerca del router, cómo probarlo…).</div>
               )}
               {messages.map((m, i) => (
                 <div className={"msg " + m.role + (m.narrate ? " narrate" : "")} key={i}>{m.content}</div>
@@ -462,7 +462,7 @@ export default function Page() {
       </div>
 
       <div className="note" style={{ textAlign: "center", marginTop: 22 }}>
-        RuView PoC · datos WiFi 100% reales · sensor Rust (wifi-densepose-wifiscan) + backend Node + agente DeepSeek · <a href="https://github.com/DevCristobalvc/ruview-wifi-sensing-poc" style={{ color: "var(--accent)" }}>código en GitHub</a>
+        RuViu · datos WiFi 100% reales · sensor Rust (wifi-densepose-wifiscan) + backend Node + agente DeepSeek · <a href="https://github.com/DevCristobalvc/ruview-wifi-sensing-poc" style={{ color: "var(--accent)" }}>código en GitHub</a>
       </div>
     </div>
   );
