@@ -246,8 +246,8 @@ export default function Page() {
     try {
       await fetch(api(backend, "/api/recalibrate"), { method: "POST", headers: { ...NGROK } });
       scoreHist.current = [];
-      setRecalMsg("✓ Línea base reiniciada (calibrando ~8s)");
-    } catch { setRecalMsg("✗ No se pudo recalibrar"); }
+      setRecalMsg("Línea base reiniciada (calibrando ~8s)");
+    } catch { setRecalMsg("No se pudo recalibrar"); }
     setTimeout(() => setRecalMsg(""), 4000);
   }, [backend]);
 
@@ -267,7 +267,7 @@ export default function Page() {
         const base = baseSamples.length ? baseSamples.reduce((a, c) => a + c, 0) / baseSamples.length : 0;
         // Phase 2: active (5s)
         let ac = 5;
-        setTest({ phase: "active", count: ac, msg: "¡Muévete ahora! 🙋", base });
+        setTest({ phase: "active", count: ac, msg: "¡Muévete ahora!", base });
         const actTimer = setInterval(() => {
           peak = Math.max(peak, frameRef.current?.motionScore ?? 0);
           ac -= 1;
@@ -308,11 +308,11 @@ export default function Page() {
       </header>
 
       {!urlOk && (
-        <div className="banner err">⚠️ La URL del backend no es válida. Debe empezar por http(s)://</div>
+        <div className="banner err">La URL del backend no es válida. Debe empezar por http(s)://</div>
       )}
       {urlOk && reachable === false && (
         <div className="banner warn">
-          🔌 No se pudo alcanzar el backend. Verifica que el backend local esté corriendo y que la URL de ngrok sea la actual (cambia al reiniciar ngrok).
+          No se pudo alcanzar el backend. Verifica que el backend local esté corriendo y que la URL de ngrok sea la actual (cambia al reiniciar ngrok).
         </div>
       )}
 
@@ -320,17 +320,17 @@ export default function Page() {
         <div className="col">
           {/* LIVE VALIDATION — para demostrar en vivo que funciona */}
           <div className="panel">
-            <h2>✅ Validación en vivo</h2>
+            <h2>Validación en vivo</h2>
             <div className="test-row">
               <button className="btn" onClick={liveTest} disabled={test.phase === "baseline" || test.phase === "active"}>
-                ▶ Iniciar prueba de movimiento
+                Iniciar prueba de movimiento
               </button>
-              <button className="btn ghost" onClick={recalibrate}>↻ Recalibrar línea base</button>
+              <button className="btn ghost" onClick={recalibrate}>Recalibrar línea base</button>
               {recalMsg && <span className="note" style={{ margin: 0 }}>{recalMsg}</span>}
             </div>
             {test.phase === "idle" && (
               <div className="note" style={{ marginTop: 12 }}>
-                Pulsa la prueba: primero quédate quieto unos segundos y luego muévete. El sistema comprobará en vivo si detecta tu movimiento — ideal para demostrar a alguien que sí funciona.
+                Pulsa la prueba: primero quédate quieto unos segundos y luego muévete. El sistema comprobará en vivo si detecta tu movimiento; ideal para demostrar a alguien que sí funciona.
               </div>
             )}
             {(test.phase === "baseline" || test.phase === "active") && (
@@ -342,7 +342,7 @@ export default function Page() {
             )}
             {test.phase === "done" && (
               <div className={"test-result " + (test.detected ? "ok" : "no")}>
-                <div className="tr-head">{test.detected ? "✅ Movimiento detectado" : "❌ No se detectó movimiento"}</div>
+                <div className="tr-head">{test.detected ? "Movimiento detectado" : "No se detectó movimiento"}</div>
                 <div className="tr-body">
                   Base en reposo: <b>{(test.base ?? 0).toFixed(2)}</b> · Pico al moverte: <b>{(test.peak ?? 0).toFixed(2)}</b>
                   {!test.detected && <div className="note" style={{ marginTop: 6 }}>Acércate más al equipo o muévete con más amplitud y repite.</div>}
@@ -427,7 +427,7 @@ export default function Page() {
               {events.length ? [...events].reverse().map((e, i) => (
                 <div className={"ev " + (e.type === "motion_started" ? "start" : "stop")} key={i}>
                   <span className="t">{fmt(e.t)}</span>
-                  <span className="tag">{e.type === "motion_started" ? "▲ movimiento" : "▼ fin"}</span>
+                  <span className="tag">{e.type === "motion_started" ? "movimiento" : "fin"}</span>
                   <span style={{ color: "var(--muted)" }}>score {e.motionScore.toFixed(2)}{e.durationMs ? ` · ${Math.round(e.durationMs / 1000)}s` : ""}</span>
                 </div>
               )) : <div className="note">Sin eventos aún. Muévete cerca del equipo para generar uno.</div>}
@@ -446,7 +446,7 @@ export default function Page() {
             </div>
             <div className="log" ref={logRef}>
               {messages.length === 0 && (
-                <div className="msg assistant">Hola 👋 Soy tu asistente de sensado WiFi. Pregúntame por el estado de la sala, o por cómo funciona el proyecto (arquitectura, si necesitas estar cerca del router, cómo probarlo…).</div>
+                <div className="msg assistant">Hola. Soy tu asistente de sensado WiFi. Pregúntame por el estado de la sala, o por cómo funciona el proyecto (arquitectura, si necesitas estar cerca del router, cómo probarlo…).</div>
               )}
               {messages.map((m, i) => (
                 <div className={"msg " + m.role + (m.narrate ? " narrate" : "")} key={i}>{m.content}</div>

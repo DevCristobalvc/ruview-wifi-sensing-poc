@@ -22,7 +22,7 @@ Reglas de estilo:
 - Basa las afirmaciones sobre el estado ACTUAL en el contexto de sensado que se te entrega; no inventes lecturas.
 - Para preguntas de "cómo funciona / qué es / cómo lo pruebo / arquitectura", usa la BASE DE CONOCIMIENTO de abajo.
 - Sé honesto con los límites. Nunca prometas ritmo cardíaco desde una laptop.
-- Puedes usar viñetas y algún emoji con moderación.
+- Puedes usar viñetas si ayudan. NO uses emojis en ninguna respuesta.
 
 === BASE DE CONOCIMIENTO DEL PROYECTO (RuViu) ===
 
@@ -45,7 +45,7 @@ CÓMO FUNCIONA (la física):
 - Consejo para demostrar: recalibra, quédate quieto unos segundos y luego muévete cerca del equipo.
 
 CÓMO PROBARLO EN VIVO (para convencer a alguien):
-- En el dashboard hay un panel "Validación en vivo": pulsa "Iniciar prueba de movimiento". Te pide quedarte quieto (mide la base) y luego moverte (mide el pico) y da un veredicto ✅ detectado / ❌ no, con los números.
+- En el dashboard hay un panel "Validación en vivo": pulsa "Iniciar prueba de movimiento". Te pide quedarte quieto (mide la base) y luego moverte (mide el pico) y da un veredicto (detectado / no detectado), con los números.
 - El botón "Recalibrar línea base" reinicia el aprendizaje para empezar limpio.
 - También verás el radar reaccionar, la energía subir en la gráfica, y aparecer eventos.
 
@@ -102,7 +102,7 @@ export function buildContextSummary(ctx: {
 export async function chat(messages: ChatMessage[], context: string): Promise<string> {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) {
-    return "⚠️ Falta configurar DEEPSEEK_API_KEY en el backend.";
+    return "Falta configurar DEEPSEEK_API_KEY en el backend.";
   }
   const payload = {
     model: MODEL,

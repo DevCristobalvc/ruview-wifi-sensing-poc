@@ -25,9 +25,11 @@ import { chat, buildContextSummary, type ChatMessage } from "./llm.js";
 import { docsHtml } from "./docs.js";
 
 const PORT = Number(process.env.PORT || 8090);
+// Resolved relative to the backend/ working dir so a fresh clone works with no
+// edits. Override with SENSOR_CMD in .env if the binary lives elsewhere.
 const SENSOR_CMD =
   process.env.SENSOR_CMD ||
-  "C:/Users/Public/cristobal/ruview/poc/sensor/target/release/ruview-rssi-sensor.exe";
+  "../sensor/target/release/ruview-rssi-sensor.exe";
 const SENSOR_INTERVAL = process.env.SENSOR_INTERVAL_MS || "250";
 const HISTORY_MAX = 600; // ~2.5 min at 4 Hz
 const EVENTS_MAX = 200;
